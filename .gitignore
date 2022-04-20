@@ -1,0 +1,5 @@
+# executables
+*.exe
+
+# production configs
+*.prod

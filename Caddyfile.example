@@ -1,0 +1,54 @@
+# Redirection (example.org => www.example.org)
+example.org {
+	redir https://www.example.org
+}
+
+# Static pages
+www.example.org {
+	import general "www.example.org"
+	import static
+
+	root * /data/wwwroot/www.example.org
+}
+
+# PHP application (Laravel framework)
+my.example.org {
+	import general "my.example.org"
+	import php
+	import static
+
+	root * /data/wwwroot/my.example.org/public
+}
+
+# Splitted frontend application (with CORS headers and subpaths)
+tools.example.org {
+	import general "tools.example.org"
+	import preflight-and-cors
+	import static
+
+	handle_path /some_tool/* {
+		root * /data/wwwroot/tools.example.org/some_tool
+	}
+
+}
+
+# API proxy (with CORS headers and subpaths)
+api.example.org {
+	import general "api.example.org"
+	import preflight-and-cors
+
+	handle_path /some_tool/* {
+		reverse_proxy * http://127.0.0.1:12001
+	}
+}
+
+# Proxy with self-signed certificates
+internal.example.org {
+	import general "internal.example.org"
+
+	handle_path /some_path/* {
+		reverse_proxy * https://127.0.0.1:9999 {
+			import proxy-ignore-cert
+		}
+	}
+}

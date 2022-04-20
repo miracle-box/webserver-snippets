@@ -1,0 +1,55 @@
+{
+	http_port 80
+	https_port 443
+	email admin@example.org
+	servers :443 {
+		protocol {
+			experimental_http3
+		}
+	}
+}
+
+(general) {
+	encode zstd gzip
+
+	log {
+		output file /data/wwwlogs/{args.0}.ndjson {
+			roll_uncompressed
+			roll_keep 5
+			roll_keep_for 160h
+		}
+	}
+}
+
+(static) {
+	@static {
+		file
+		path *.ico *.css *.js *.gif *.jpg *.jpeg *.png *.svg *.woff *.woff2 *.json
+	}
+
+	header @static Cache-Control max-age=5184000
+	file_server
+}
+
+(php) {
+	php_fastcgi * unix//dev/shm/php-cgi.sock
+}
+
+(proxy-ignore-cert) {
+	transport http {
+		tls_insecure_skip_verify
+	}
+}
+
+(preflight-and-cors) {
+	@options {
+		method OPTIONS
+	}
+	header {
+		Access-Control-Allow-Origin "{http.request.header.Origin}"
+		Access-Control-Allow-Credentials true
+		Access-Control-Allow-Methods *
+		Access-Control-Allow-Headers DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+	}
+	respond @options 204
+}
